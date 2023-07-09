@@ -16,3 +16,26 @@ BEGIN
     RAISE NOTICE 'Data inserted successfully.';
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION create_project_with_teams(
+    project_name VARCHAR(30),
+    client VARCHAR(30),
+    start_date DATE,
+    deadline DATE,
+    team_ids INT[]
+)
+RETURNS VOID AS $$
+DECLARE
+    project_id INT;
+BEGIN
+    INSERT INTO projects (name, client, start_date, deadline)
+    VALUES (project_name, client, start_date, deadline)
+    RETURNING id INTO project_id;
+    FOR i IN 1..array_length(team_ids, 1) LOOP
+        INSERT INTO team_project (team_id, project_id)
+        VALUES (team_ids[i], project_id);
+    END LOOP;
+    RAISE NOTICE 'Project with teams created succesfully';
+END;
+$$ LANGUAGE plpgsql;
+
